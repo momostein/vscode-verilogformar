@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
 			args.push(tempfile);
 
 			var hasSettingsFile: boolean = false;
-			var settingFile: string = '';
+			var settingsFile: string = '';
 
 			var localSettings = path.dirname(document.fileName)
 				+ path.sep
@@ -34,18 +34,18 @@ export function activate(context: vscode.ExtensionContext) {
 
 			if (validFile(localSettings)) {
 				console.log('Local settings found');
-				settingFile = localSettings;
+				settingsFile = localSettings;
 				hasSettingsFile = true;
 			} else if (validFile(globalSettings)) {
 				console.log('Global settings found');
-				settingFile = globalSettings;
+				settingsFile = globalSettings;
 				hasSettingsFile = true;
 			} else {
 			}
 
 			if (hasSettingsFile) {
 				args.push("-s")
-				args.push(settingFile);
+				args.push(settingsFile);
 			}
 
 			try {
