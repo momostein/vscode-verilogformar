@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 
 			if (hasSettingsFile) {
-				args.push("-s")
+				args.push("-s");
 				args.push(settingsFile);
 			}
 
