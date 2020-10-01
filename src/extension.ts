@@ -16,13 +16,23 @@ export function activate(context: vscode.ExtensionContext) {
 			const verilogformat = <string>vscode.workspace.getConfiguration().get('verilog-format.path');
 			const globalSettings = <string>vscode.workspace.getConfiguration().get('verilog-format.settings');
 
-			if (!validFile(verilogformat)) {
-				vscode.window.showErrorMessage('Executable ' + verilogformat + '  not found, set Settings verilog-format.path');
+			// What if you want to use verilog-format from path?
+			// This won't work then!
+			// if (!validFile(verilogformat)) {
+			// 	vscode.window.showErrorMessage('Executable ' + verilogformat + '  not found, set Settings verilog-format.path');
+			// 	return result;
+			// }
+
+			var args: string[] = ["-f",];
+			var tempfile: string = "";
+
+			try {
+				tempfile = createTempFileOfDocument(document);
+			} catch (error) {
+				vscode.window.showErrorMessage('Verilog Format: ' + error.message);
 				return result;
 			}
 
-			var args: string[] = ["-f",];
-			var tempfile: string = createTempFileOfDocument(document);
 			args.push(tempfile);
 
 			var hasSettingsFile: boolean = false;
@@ -36,24 +46,33 @@ export function activate(context: vscode.ExtensionContext) {
 				console.log('Local settings found');
 				settingsFile = localSettings;
 				hasSettingsFile = true;
-			} else if (validFile(globalSettings)) {
+			} else if (globalSettings) {
 				console.log('Global settings found');
 				settingsFile = globalSettings;
 				hasSettingsFile = true;
-			} else {
 			}
 
-			if (hasSettingsFile) {
+			if (settingsFile) {
 				args.push("-s");
 				args.push(settingsFile);
 			}
 
 			try {
-				console.log(`Executing command: "${verilogformat} ${args.join(" ")}"`);
-				child.execFileSync(verilogformat, args, {});
+				if (verilogformat) {
+					let command: string = `${verilogformat} ${args.join(" ")}`;
+					console.log(`Executing command: "${command}"`);
+					child.execFileSync(verilogformat, args, {});
+				} else {
+					let command: string = `verilog-format ${args.join(" ")}`;
+					console.log(`Executing command: "${command}"`);
+					child.execSync(command);
+				}
+
 				result = determineEdits(document, tempfile);
-			} catch (err) {
-				console.log(err);
+
+			} catch (error) {
+				console.log(error);
+				vscode.window.showErrorMessage('Verilog Format: ' + error.message);
 			}
 
 			return result;
@@ -68,9 +87,11 @@ export function deactivate() { }
 function createTempFileOfDocument(document: vscode.TextDocument): string {
 	const content = document.getText();
 	const tempfile = temp.openSync();
+
 	if (tempfile === undefined) {
-		throw "Unable to create temporary file";
+		throw new Error("Unable to create temporary file");
 	}
+
 	fs.writeSync(tempfile.fd, content);
 	fs.closeSync(tempfile.fd);
 	return tempfile.path;

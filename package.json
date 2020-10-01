@@ -25,8 +25,8 @@
 				"verilog-format.path": {
 					"scope": "window",
 					"type": "string",
-					"default": "/opt/verilog-format/verilog-format",
-					"description": "Path of verilog-format"
+					"default": "",
+					"description": "Path to verilog-formate exe. Leave empty if verilog-format is in path"
 				},
 				"verilog-format.settings": {
 					"scope": "window",
